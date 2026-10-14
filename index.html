@@ -103,12 +103,17 @@
 
     <!-- Weekly Schedule Days -->
     <section class="mt-8">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-bold text-slate-900 dark:text-white">Weekly Schedule</h2>
         <button onclick="resetWeek()" class="text-xs text-red-500 hover:text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-900/50 px-2.5 py-1 rounded-lg">Reset Week</button>
       </div>
 
-      <div class="space-y-4" id="daysList">
+      <!-- Day Navigation Tabs -->
+      <div class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-none" id="dayTabsContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="space-y-4 mt-3" id="daysList">
         <!-- Rendered dynamically via JavaScript -->
       </div>
     </section>
@@ -144,6 +149,7 @@
     const schedule = [
       {
         day: "Monday",
+        shortDay: "Mon",
         type: "Calisthenics Ladder Session A",
         badge: "Workout",
         badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
@@ -157,6 +163,7 @@
       },
       {
         day: "Tuesday",
+        shortDay: "Tue",
         type: "Belcher Bay Park Sprints",
         badge: "Run",
         badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
@@ -168,6 +175,7 @@
       },
       {
         day: "Wednesday",
+        shortDay: "Wed",
         type: "Calisthenics Ladder Session B",
         badge: "Workout",
         badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
@@ -180,6 +188,7 @@
       },
       {
         day: "Thursday",
+        shortDay: "Thu",
         type: "Active Recovery Day",
         badge: "Recovery",
         badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
@@ -190,6 +199,7 @@
       },
       {
         day: "Friday",
+        shortDay: "Fri",
         type: "Calisthenics Ladder Session C",
         badge: "Workout",
         badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
@@ -202,6 +212,7 @@
       },
       {
         day: "Saturday",
+        shortDay: "Sat",
         type: "Belcher Bay Waterfront Tempo Run",
         badge: "Run",
         badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
@@ -212,6 +223,7 @@
       },
       {
         day: "Sunday",
+        shortDay: "Sun",
         type: "Rest Day",
         badge: "Rest",
         badgeColor: "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
@@ -224,6 +236,7 @@
     // --- STATE MANAGEMENT ---
     let state = {
       theme: 'dark',
+      activeTab: 'Monday',
       rungs: { push: 1, pull: 1, squat: 1 },
       completed: {}
     };
@@ -292,12 +305,54 @@
       });
     }
 
-    // --- SCHEDULE & PROGRESS LOGIC ---
+    // --- SCHEDULE & TAB RENDER LOGIC ---
+    function renderTabs() {
+      const container = document.getElementById('dayTabsContainer');
+      container.innerHTML = '';
+
+      // Add "All" Tab
+      const allBtn = document.createElement('button');
+      allBtn.onclick = () => selectTab('All');
+      const isAllActive = state.activeTab === 'All';
+      allBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+        isAllActive 
+          ? 'bg-brand-500 text-white shadow-sm' 
+          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+      }`;
+      allBtn.textContent = 'All Days';
+      container.appendChild(allBtn);
+
+      // Add Day Tabs
+      schedule.forEach(item => {
+        const btn = document.createElement('button');
+        btn.onclick = () => selectTab(item.day);
+        const isActive = state.activeTab === item.day;
+        btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+          isActive 
+            ? 'bg-brand-500 text-white shadow-sm' 
+            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+        }`;
+        btn.textContent = item.shortDay;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectTab(tabName) {
+      state.activeTab = tabName;
+      renderTabs();
+      renderSchedule();
+      saveState();
+    }
+
     function renderSchedule() {
       const container = document.getElementById('daysList');
       container.innerHTML = '';
 
-      schedule.forEach(day => {
+      const daysToRender = state.activeTab === 'All' 
+        ? schedule 
+        : schedule.filter(d => d.day === state.activeTab);
+
+      daysToRender.forEach(day => {
         const dayCard = document.createElement('div');
         dayCard.className = 'p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm';
 
@@ -358,6 +413,7 @@
       loadState();
       applyTheme();
       renderLadders();
+      renderTabs();
       renderSchedule();
     });
   </script>
