@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calisthenics & Belcher Bay Park Run Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b0f19',
+                        cardbg: '#161e2e',
+                        bordercolor: '#26334d',
+                        amberaccent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .touch-btn {
+            transition: transform 0.1s ease, background-color 0.15s ease;
+        }
+        .touch-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-12 selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header Section -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-30 px-4 py-4 shadow-lg">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-black tracking-tight text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> CALI & RUNNER TRACKER
+                </h1>
+                <p class="text-xs text-slate-400">Belcher Bay Park & Progression Ladders</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl border border-slate-700 transition" title="Toggle Theme">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <button id="reset-week-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 px-3 rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Week
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto w-full px-4 pt-5 flex-1 flex flex-col gap-6">
+
+        <!-- Progress Overview Widget -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-line text-amber-400"></i> Weekly Compliance
+                </span>
+                <span id="weekly-progress-percent" class="text-sm font-black text-amber-400 font-mono">0%</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden border border-slate-800 p-0.5">
+                <div id="weekly-progress-bar" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full w-0 transition-all duration-500 rounded-full shadow-sm"></div>
+            </div>
+        </section>
+
+        <!-- Current Ladder Levels Controls (Global Level Up / Level Down) -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-md">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-amber-400"></i> Active Movement Rungs
+                </h2>
+                <span class="text-xs text-slate-400 hidden sm:inline">Use + / - to step between rungs</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Push Level Card -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Push Pattern</span>
+                        <span id="push-level-badge" class="text-xs font-black bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/30 font-mono">Rung 1</span>
+                    </div>
+                    <div class="my-1 min-h-[48px]">
+                        <div id="push-rung-name" class="text-sm font-bold text-amber-300 leading-tight">Normal Push-Up</div>
+                        <div id="push-rung-gate" class="text-xs font-medium text-slate-400 mt-1">Gate: 15 clean reps</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-800">
+                        <button onclick="adjustRung('push', -1)" class="touch-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold border border-slate-700">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">LEVEL</span>
+                        <button onclick="adjustRung('push', 1)" class="touch-btn bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pull Level Card -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Pull Pattern</span>
+                        <span id="pull-level-badge" class="text-xs font-black bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/30 font-mono">Rung 1</span>
+                    </div>
+                    <div class="my-1 min-h-[48px]">
+                        <div id="pull-rung-name" class="text-sm font-bold text-amber-300 leading-tight">Australian / Table Row</div>
+                        <div id="pull-rung-gate" class="text-xs font-medium text-slate-400 mt-1">Gate: 15 clean reps</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-800">
+                        <button onclick="adjustRung('pull', -1)" class="touch-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold border border-slate-700">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">LEVEL</span>
+                        <button onclick="adjustRung('pull', 1)" class="touch-btn bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Squat Level Card -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Squat Pattern</span>
+                        <span id="squat-level-badge" class="text-xs font-black bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/30 font-mono">Rung 1</span>
+                    </div>
+                    <div class="my-1 min-h-[48px]">
+                        <div id="squat-rung-name" class="text-sm font-bold text-amber-300 leading-tight">Bodyweight Air Squat</div>
+                        <div id="squat-rung-gate" class="text-xs font-medium text-slate-400 mt-1">Gate: 20 clean reps</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-800">
+                        <button onclick="adjustRung('squat', -1)" class="touch-btn bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold border border-slate-700">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">LEVEL</span>
+                        <button onclick="adjustRung('squat', 1)" class="touch-btn bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs w-9 h-9 rounded-lg flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Day Selector Nav (Horizontal Scroll) -->
+        <nav class="flex space-x-2 overflow-x-auto hide-scrollbar py-1">
+            <button onclick="selectDay('Mon')" id="tab-Mon" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-amber-500 text-slate-950 shadow-md">Mon</button>
+            <button onclick="selectDay('Tue')" id="tab-Tue" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Tue</button>
+            <button onclick="selectDay('Wed')" id="tab-Wed" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Wed</button>
+            <button onclick="selectDay('Thu')" id="tab-Thu" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Thu</button>
+            <button onclick="selectDay('Fri')" id="tab-Fri" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Fri</button>
+            <button onclick="selectDay('Sat')" id="tab-Sat" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Sat</button>
+            <button onclick="selectDay('Sun')" id="tab-Sun" class="day-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800">Sun</button>
+        </nav>
+
+        <!-- Dynamic Day Card Display -->
+        <div id="day-content" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+            <!-- Content Injected Dynamically by JS -->
+        </div>
+
+    </main>
+
+    <!-- Application Logic & Data -->
+    <script>
+        // Data Definitions for Exact Ladder Rungs from Transcripts
+        const ladderData = {
+            push: [
+                { rung: 1, name: "Normal Push-Up", gate: "Gate: 15 clean reps" },
+                { rung: 2, name: "Feet-Elevated Push-Up", gate: "Gate: 12 clean reps" },
+                { rung: 3, name: "Staggered-Hand Push-Up", gate: "Gate: 8 reps/side" },
+                { rung: 4, name: "Assisted One-Arm Push-Up", gate: "Gate: 5 reps/side" },
+                { rung: 5, name: "Full One-Arm Push-Up", gate: "Gate: Max capability" }
+            ],
+            pull: [
+                { rung: 1, name: "Australian / Table Row", gate: "Gate: 15 clean reps" },
+                { rung: 2, name: "Dead Hang", gate: "Gate: 30s hold" },
+                { rung: 3, name: "Scapular Pull-Up", gate: "Gate: 10 clean reps" },
+                { rung: 4, name: "Negative Pull-Up", gate: "Gate: 5 reps @ 5s eccentric" },
+                { rung: 5, name: "Full Pull-Up", gate: "Gate: Max capability" }
+            ],
+            squat: [
+                { rung: 1, name: "Bodyweight Air Squat", gate: "Gate: 20 clean reps" },
+                { rung: 2, name: "Split Squat", gate: "Gate: 12 reps/side" },
+                { rung: 3, name: "Rear-Foot Elevated / Bulgarian Split Squat", gate: "Gate: 10 reps/side" },
+                { rung: 4, name: "Assisted Pistol Squat", gate: "Gate: 5 reps/side" },
+                { rung: 5, name: "Full Pistol Squat", gate: "Gate: Max capability" }
+            ]
+        };
+
+        // 7-Day Weekly Schedule Structure
+        const daysSchedule = {
+            Mon: {
+                title: "Workout A: Push / Pull / Squat Ladders + Core",
+                category: "Calisthenics & Core",
+                icon: "fa-dumbbell",
+                tasks: [
+                    { id: "mon_push", type: "ladder", key: "push", sets: "3 Sets" },
+                    { id: "mon_pull", type: "ladder", key: "pull", sets: "3 Sets" },
+                    { id: "mon_squat", type: "ladder", key: "squat", sets: "3 Sets" },
+                    { id: "mon_core", type: "static", title: "Hollow Body Hold (or Plank)", gate: "3 Sets × 30–45s", note: "Maintain active pelvic tilt & pressed lower back." }
+                ]
+            },
+            Tue: {
+                title: "Belcher Bay Park Sprint Intervals",
+                category: "Run & Breathing",
+                icon: "fa-person-running",
+                tasks: [
+                    { id: "tue_sprints", type: "static", title: "Interval Sprints", gate: "6–8 sets × 50–80m", note: "Belcher Bay waterfront promenade." },
+                    { id: "tue_rhythm", type: "static", title: "3:2 Breathing Rhythm Focus", gate: "Inhale 3 steps / Exhale 2 steps", note: "Alternates foot strike impact on exhalation." },
+                    { id: "tue_diaphragm", type: "static", title: "Diaphragmatic Belly Breathing", gate: "Belly expands first", note: "Avoid shallow chest rising during runs." }
+                ]
+            },
+            Wed: {
+                title: "Workout B: Push / Pull / Squat Ladders + Core",
+                category: "Calisthenics & Core",
+                icon: "fa-dumbbell",
+                tasks: [
+                    { id: "wed_push", type: "ladder", key: "push", sets: "3 Sets" },
+                    { id: "wed_pull", type: "ladder", key: "pull", sets: "3 Sets" },
+                    { id: "wed_squat", type: "ladder", key: "squat", sets: "3 Sets" },
+                    { id: "wed_core", type: "static", title: "L-Sit (or Ab Wheel Rollout)", gate: "3 Sets × 5–10 reps / holds", note: "Deep core stabilization and compression strength." }
+                ]
+            },
+            Thu: {
+                title: "Active Recovery Day",
+                category: "Rest & Repair",
+                icon: "fa-heart-pulse",
+                tasks: [
+                    { id: "thu_walk", type: "static", title: "Light Promenade Walk", gate: "20–30 mins easy pace", note: "Active recovery and light blood circulation." },
+                    { id: "thu_breath_check", type: "static", title: "2-Min Diaphragm Practice", gate: "Hand on belly, hand on chest", note: "Re-train belly breathing while relaxed." }
+                ]
+            },
+            Fri: {
+                title: "Workout C: Push / Pull / Squat Ladders + Core",
+                category: "Calisthenics & Core",
+                icon: "fa-dumbbell",
+                tasks: [
+                    { id: "fri_push", type: "ladder", key: "push", sets: "3 Sets" },
+                    { id: "fri_pull", type: "ladder", key: "pull", sets: "3 Sets" },
+                    { id: "fri_squat", type: "ladder", key: "squat", sets: "3 Sets" },
+                    { id: "fri_core", type: "static", title: "Dragon Flag (or Archups)", gate: "3 Sets × 5–8 reps", note: "Slow 3-second eccentric lowering phase." }
+                ]
+            },
+            Sat: {
+                title: "Belcher Bay Waterfront Tempo Run",
+                category: "Run & Breathing",
+                icon: "fa-water",
+                tasks: [
+                    { id: "sat_tempo", type: "static", title: "Waterfront Tempo Run", gate: "15–20 mins continuous", note: "Conversational aerobic pace." },
+                    { id: "sat_nasal", type: "static", title: "Nasal Breathing Channel", gate: "Nose In / Nose Out", note: "Keeps heart rate in aerobic zone." }
+                ]
+            },
+            Sun: {
+                title: "Full Recovery & Rest",
+                category: "Rest & Repair",
+                icon: "fa-bed",
+                tasks: [
+                    { id: "sun_rest", type: "static", title: "Full Rest", gate: "Recharge & sleep", note: "Prepare for upcoming week's ladder progression." }
+                ]
+            }
+        };
+
+        // Application State
+        let state = {
+            rungs: {
+                push: 0, // Index 0 = Rung 1
+                pull: 0,
+                squat: 0
+            },
+            completedTasks: {},
+            activeDay: 'Mon'
+        };
+
+        // Init App
+        function initApp() {
+            loadState();
+            setupThemeToggle();
+            updateGlobalRungUI();
+            selectDay(state.activeDay || 'Mon');
+            updateWeeklyProgress();
+
+            document.getElementById('reset-week-btn').addEventListener('click', resetWeek);
+        }
+
+        // Theme Toggle Logic
+        function setupThemeToggle() {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const icon = document.getElementById('theme-icon');
+
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                icon.className = 'fa-solid fa-sun';
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            });
+        }
+
+        // Save & Load State via LocalStorage
+        function saveState() {
+            localStorage.setItem('cali_run_dashboard_state', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('cali_run_dashboard_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                } catch(e) {
+                    console.error("State load error", e);
+                }
+            }
+        }
+
+        // Adjust Ladder Rungs UP (+) or DOWN (-)
+        function adjustRung(pattern, delta) {
+            const current = state.rungs[pattern];
+            const updated = current + delta;
+
+            if (updated >= 0 && updated < ladderData[pattern].length) {
+                state.rungs[pattern] = updated;
+                saveState();
+                updateGlobalRungUI();
+                renderActiveDay(); // Dynamically updates active daily exercise cards
+            }
+        }
+
+        // Update Top Level Cards
+        function updateGlobalRungUI() {
+            ['push', 'pull', 'squat'].forEach(pattern => {
+                const idx = state.rungs[pattern];
+                const data = ladderData[pattern][idx];
+
+                document.getElementById(`${pattern}-level-badge`).innerText = `Rung ${data.rung}`;
+                document.getElementById(`${pattern}-rung-name`).innerText = data.name;
+                document.getElementById(`${pattern}-rung-gate`).innerText = data.gate;
+            });
+        }
+
+        // Switch Days
+        function selectDay(dayKey) {
+            state.activeDay = dayKey;
+            
+            document.querySelectorAll('.day-tab').forEach(btn => {
+                btn.classList.remove('bg-amber-500', 'text-slate-950', 'shadow-md');
+                btn.classList.add('bg-slate-900', 'text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`tab-${dayKey}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-900', 'text-slate-400');
+                activeBtn.classList.add('bg-amber-500', 'text-slate-950', 'shadow-md');
+            }
+
+            renderActiveDay();
+        }
+
+        // Render Active Day Tasks
+        function renderActiveDay() {
+            const dayData = daysSchedule[state.activeDay];
+            const container = document.getElementById('day-content');
+
+            let html = `
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">${dayData.category}</span>
+                        <h2 class="text-base font-extrabold text-slate-100 mt-1.5">${dayData.title}</h2>
+                    </div>
+                    <div class="text-slate-500 text-xl pl-2">
+                        <i class="fa-solid ${dayData.icon}"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 mt-1">
+            `;
+
+            dayData.tasks.forEach(task => {
+                const isCompleted = !!state.completedTasks[task.id];
+                let title, gate, subtitle = "";
+
+                if (task.type === 'ladder') {
+                    const rungIdx = state.rungs[task.key];
+                    const rungObj = ladderData[task.key][rungIdx];
+                    title = `${task.key.toUpperCase()}: ${rungObj.name}`;
+                    gate = `${task.sets} • ${rungObj.gate}`;
+                    subtitle = `Current: Rung ${rungObj.rung} of 5`;
+                } else {
+                    title = task.title;
+                    gate = task.gate;
+                    subtitle = task.note || "";
+                }
+
+                html += `
+                    <div onclick="toggleTask('${task.id}')" class="touch-btn cursor-pointer bg-slate-950/70 hover:bg-slate-950 border ${isCompleted ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-slate-800'} p-3.5 rounded-xl flex items-center justify-between gap-3 transition shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-lg border ${isCompleted ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-700 bg-slate-900'} flex items-center justify-center text-xs font-bold transition-all shrink-0">
+                                ${isCompleted ? '<i class="fa-solid fa-check"></i>' : ''}
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold ${isCompleted ? 'line-through text-slate-500' : 'text-slate-200'}">${title}</div>
+                                <div class="text-xs font-semibold text-amber-400 mt-0.5">${gate}</div>
+                                ${subtitle ? `<div class="text-[11px] text-slate-400 mt-0.5">${subtitle}</div>` : ''}
+                            </div>
+                        </div>
+                        ${task.type === 'ladder' ? `<span class="text-[10px] font-mono font-bold text-amber-400/90 bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20 shrink-0">Rung ${ladderData[task.key][state.rungs[task.key]].rung}</span>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // Toggle Workout Completion Checkbox
+        function toggleTask(taskId) {
+            state.completedTasks[taskId] = !state.completedTasks[taskId];
+            saveState();
+            renderActiveDay();
+            updateWeeklyProgress();
+        }
+
+        // Update Overall Progress %
+        function updateWeeklyProgress() {
+            let total = 0;
+            let completed = 0;
+
+            Object.keys(daysSchedule).forEach(day => {
+                daysSchedule[day].tasks.forEach(task => {
+                    total++;
+                    if (state.completedTasks[task.id]) {
+                        completed++;
+                    }
+                });
+            });
+
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('weekly-progress-percent').innerText = `${percent}%`;
+            document.getElementById('weekly-progress-bar').style.width = `${percent}%`;
+        }
+
+        // Reset All Tasks for the Week
+        function resetWeek() {
+            if (confirm("Reset all completed workouts for this week? (Your current Ladder Levels will remain saved)")) {
+                state.completedTasks = {};
+                saveState();
+                renderActiveDay();
+                updateWeeklyProgress();
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
