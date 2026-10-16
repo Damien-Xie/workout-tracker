@@ -53,14 +53,17 @@
     <section class="mt-8">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-bold text-slate-900 dark:text-white">Calisthenics Ladders</h2>
-        <span class="text-xs text-slate-500 dark:text-slate-400">Rung Progression (1 - 5)</span>
+        <span class="text-xs text-slate-500 dark:text-slate-400">Tap card for form guide</span>
       </div>
 
       <div class="grid gap-3">
         <!-- Push Ladder -->
         <div class="p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-          <div>
-            <div class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Push Pattern</div>
+          <div class="cursor-pointer flex-1 pr-2" onclick="openExerciseInfo('push')">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Push Pattern</span>
+              <span class="text-xs bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 rounded text-slate-500 dark:text-slate-300 font-mono">ℹ️ Guide</span>
+            </div>
             <div id="pushRungName" class="font-bold text-slate-900 dark:text-white mt-0.5 text-base">Normal Push-Up</div>
             <div id="pushRungGate" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Gate: 15 clean reps</div>
           </div>
@@ -73,8 +76,11 @@
 
         <!-- Pull Ladder -->
         <div class="p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-          <div>
-            <div class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Pull Pattern</div>
+          <div class="cursor-pointer flex-1 pr-2" onclick="openExerciseInfo('pull')">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Pull Pattern</span>
+              <span class="text-xs bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 rounded text-slate-500 dark:text-slate-300 font-mono">ℹ️ Guide</span>
+            </div>
             <div id="pullRungName" class="font-bold text-slate-900 dark:text-white mt-0.5 text-base">Australian / Table Rows</div>
             <div id="pullRungGate" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Gate: 15 clean reps</div>
           </div>
@@ -87,8 +93,11 @@
 
         <!-- Squat Ladder -->
         <div class="p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-          <div>
-            <div class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Squat Pattern</div>
+          <div class="cursor-pointer flex-1 pr-2" onclick="openExerciseInfo('squat')">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-brand-600 dark:text-brand-500 uppercase tracking-wide">Squat Pattern</span>
+              <span class="text-xs bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 rounded text-slate-500 dark:text-slate-300 font-mono">ℹ️ Guide</span>
+            </div>
             <div id="squatRungName" class="font-bold text-slate-900 dark:text-white mt-0.5 text-base">Bodyweight Air Squats</div>
             <div id="squatRungGate" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Gate: 20 clean reps</div>
           </div>
@@ -109,39 +118,141 @@
       </div>
 
       <!-- Day Navigation Tabs -->
-      <div class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-none" id="dayTabsContainer">
-        <!-- Rendered dynamically -->
-      </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-none" id="dayTabsContainer"></div>
 
-      <div class="space-y-4 mt-3" id="daysList">
-        <!-- Rendered dynamically via JavaScript -->
-      </div>
+      <div class="space-y-4 mt-3" id="daysList"></div>
     </section>
   </div>
 
+  <!-- EXERCISE GUIDE MODAL -->
+  <div id="infoModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-900 dark:text-white">Exercise Guide</h3>
+        <button onclick="closeExerciseInfo()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xl px-2">&times;</button>
+      </div>
+      <div id="modalContent" class="mt-4 space-y-4 text-sm text-slate-700 dark:text-slate-300">
+        <!-- Dynamic content injected here -->
+      </div>
+      <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+        <button onclick="closeExerciseInfo()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition">Got It</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // --- LADDER DATA CONFIGURATION ---
+    // --- LADDER DATA & DETAILED GUIDES ---
     const ladders = {
       push: [
-        { name: "Normal Push-Up", gate: "15 clean reps" },
-        { name: "Feet-Elevated Push-Up", gate: "12 clean reps" },
-        { name: "Staggered-Hand Push-Up", gate: "8 reps each side" },
-        { name: "Assisted One-Arm Push-Up", gate: "5 reps each side" },
-        { name: "Full One-Arm Push-Up", gate: "Top Level Progression" }
+        {
+          name: "Normal Push-Up",
+          gate: "15 clean reps",
+          desc: "Standard push-up with hands slightly wider than shoulder-width.",
+          cues: "Keep core braced, glutes squeezed, and elbows tucked at a 45-degree angle. Lower chest to floor.",
+          breathing: "Inhale diaphragmatically on the descent; exhale powerfully on the push."
+        },
+        {
+          name: "Feet-Elevated Push-Up",
+          gate: "12 clean reps",
+          desc: "Elevate feet on a stable box or chair to shift load onto upper chest and shoulders.",
+          cues: "Maintain a straight body line from heels to head. Avoid sagging hips.",
+          breathing: "Steady nasal inhale down, forceful exhale up."
+        },
+        {
+          name: "Staggered-Hand Push-Up",
+          gate: "8 reps each side",
+          desc: "One hand placed slightly forward and outward, shifting bias unevenly.",
+          cues: "Switch hand positions evenly across sets to balance muscular development.",
+          breathing: "Control descent with deep belly breath."
+        },
+        {
+          name: "Assisted One-Arm Push-Up",
+          gate: "5 reps each side",
+          desc: "Use a slight fingertip support or elevated stance on the non-working arm.",
+          cues: "Keep legs wider for stability; resist rotation at the hips.",
+          breathing: "Inhale eccentric, exhale concentric."
+        },
+        {
+          name: "Full One-Arm Push-Up",
+          gate: "Top Level Progression",
+          desc: "Unassisted single-arm push-up with feet wide and core locked.",
+          cues: "Ultimate expression of pressing strength.",
+          breathing: "Strict controlled cadence."
+        }
       ],
       pull: [
-        { name: "Australian / Table Rows", gate: "15 clean reps" },
-        { name: "Dead Hang", gate: "30-second hold" },
-        { name: "Scapular Pull-Ups", gate: "10 clean reps" },
-        { name: "Negative Pull-Ups", gate: "5 reps @ 5s eccentric" },
-        { name: "Full Pull-Up", gate: "Top Level Progression" }
+        {
+          name: "Australian / Table Rows",
+          gate: "15 clean reps",
+          desc: "Inverted row under a sturdy table or low bar.",
+          cues: "Lead with the chest, pull shoulder blades back and down, keep body rigid.",
+          breathing: "Inhale down, exhale as you pull your chest to the bar/edge."
+        },
+        {
+          name: "Dead Hang",
+          gate: "30-second hold",
+          desc: "Active hang from a pull-up bar with shoulder blades depressed.",
+          cues: "Engage lats slightly; avoid passive slouching in the shoulder joints.",
+          breathing: "Deep, calm diaphragmatic breathing to build grip endurance."
+        },
+        {
+          name: "Scapular Pull-Ups",
+          gate: "10 clean reps",
+          desc: "From a dead hang, pull shoulder blades down and back without bending elbows.",
+          cues: "Isolate the scapular retractors and depressors.",
+          breathing: "Inhale at bottom, exhale on the upward shoulder pull."
+        },
+        {
+          name: "Negative Pull-Ups",
+          gate: "5 reps @ 5s eccentric",
+          desc: "Jump or step up to the top position and lower yourself down as slowly as possible.",
+          cues: "Aim for a strict 5-second descent fighting gravity all the way.",
+          breathing: "Controlled exhale throughout the slow lowering phase."
+        },
+        {
+          name: "Full Pull-Up",
+          gate: "Top Level Progression",
+          desc: "Dead hang to chin over bar with strict form.",
+          cues: "Full lockout at the bottom; no swinging or kipping.",
+          breathing: "Inhale at bottom, powerful exhale as chin clears the bar."
+        }
       ],
       squat: [
-        { name: "Bodyweight Air Squats", gate: "20 clean reps" },
-        { name: "Split Squat", gate: "12 reps each side" },
-        { name: "Rear-Foot Elevated Split Squat", gate: "10 reps each side" },
-        { name: "Assisted Pistol Squat", gate: "5 reps each side" },
-        { name: "Full Pistol Squat", gate: "Top Level Progression" }
+        {
+          name: "Bodyweight Air Squats",
+          gate: "20 clean reps",
+          desc: "Shoulder-width stance, descending until hip crease is below knee level.",
+          cues: "Keep heels flat, chest proud, and knees tracking outward over toes.",
+          breathing: "Inhale down into the belly; exhale on the drive up."
+        },
+        {
+          name: "Split Squat",
+          gate: "12 reps each side",
+          desc: "Stationary split stance dropping back knee straight down.",
+          cues: "Maintain vertical torso and balanced weight across both feet.",
+          breathing: "Inhale down, exhale up."
+        },
+        {
+          name: "Rear-Foot Elevated Split Squat",
+          gate: "10 reps each side",
+          desc: "Bulgarian split squat with rear foot elevated on a bench or chair.",
+          cues: "Deep hip flexion on the front leg; drive through front heel.",
+          breathing: "Steady diaphragmatic cadence."
+        },
+        {
+          name: "Assisted Pistol Squat",
+          gate: "5 reps each side",
+          desc: "Single-leg squat holding a TRX strap, doorframe, or pole for light balance.",
+          cues: "Keep non-working leg extended forward; lower with control.",
+          breathing: "Deep inhale on descent, powerful exhale on ascent."
+        },
+        {
+          name: "Full Pistol Squat",
+          gate: "Top Level Progression",
+          desc: "Unassisted single-leg deep squat to full lockout.",
+          cues: "Pristine ankle mobility and core stability required.",
+          breathing: "Controlled, focused breath rhythm."
+        }
       ]
     };
 
@@ -280,6 +391,40 @@
       saveState();
     }
 
+    // --- MODAL GUIDE LOGIC ---
+    function openExerciseInfo(pattern) {
+      const currentRung = state.rungs[pattern];
+      const item = ladders[pattern][currentRung - 1];
+      const patternName = pattern.toUpperCase();
+
+      document.getElementById('modalTitle').textContent = `${patternName} Pattern: Rung ${currentRung} - ${item.name}`;
+      
+      document.getElementById('modalContent').innerHTML = `
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700">
+          <div class="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 mb-1">Gate Requirement</div>
+          <div class="font-semibold text-slate-900 dark:text-white">${item.gate}</div>
+        </div>
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Description</div>
+          <p>${item.desc}</p>
+        </div>
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Form Cues</div>
+          <p>${item.cues}</p>
+        </div>
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Breathing Focus</div>
+          <p class="italic text-brand-600 dark:text-brand-400">${item.breathing}</p>
+        </div>
+      `;
+
+      document.getElementById('infoModal').classList.remove('hidden');
+    }
+
+    function closeExerciseInfo() {
+      document.getElementById('infoModal').classList.add('hidden');
+    }
+
     // --- LADDER LEVEL LOGIC ---
     function changeRung(pattern, delta) {
       const current = state.rungs[pattern];
@@ -310,7 +455,6 @@
       const container = document.getElementById('dayTabsContainer');
       container.innerHTML = '';
 
-      // Add "All" Tab
       const allBtn = document.createElement('button');
       allBtn.onclick = () => selectTab('All');
       const isAllActive = state.activeTab === 'All';
@@ -322,7 +466,6 @@
       allBtn.textContent = 'All Days';
       container.appendChild(allBtn);
 
-      // Add Day Tabs
       schedule.forEach(item => {
         const btn = document.createElement('button');
         btn.onclick = () => selectTab(item.day);
